@@ -4,18 +4,21 @@ import wave
 import pyaudio
 import serial.tools.list_ports
 
-find_port = ""
+find_port = ""  # there is an issue in this loop to find usb com port of an arduino
+
 # for i in serial.tools.list_ports.comports():
 #     print(i)
 #     if "COM3" in i:
 #         find_port = "COM3"
 #     else:
 #         print("enter an arduino device or check cable")
+
+
 serialPort = serial.Serial(
     port="COM3", baudrate=9600, bytesize=8, timeout=2, stopbits=serial.STOPBITS_ONE
 )
 time.sleep(2)  # wait for 2 seconds for the communication to get established
-
+# audio config
 CHUNK = 1024
 FORMAT = pyaudio.paInt16
 CHANNELS = 2
@@ -24,7 +27,7 @@ RECORD_SECONDS = 5
 WAVE_OUTPUT_FILENAME = "output.wav"
 dev_index = 1
 p = pyaudio.PyAudio()
-
+# catch the stream
 stream = p.open(format=FORMAT,
                 channels=CHANNELS,
                 rate=RATE,
@@ -38,6 +41,7 @@ print("* recording")
 frames = []
 
 while 1:
+    print(str(serialPort.readline()))
     data = stream.read(CHUNK)
     frames.append(data)
     wf = wave.open(WAVE_OUTPUT_FILENAME, 'wb')
@@ -47,11 +51,4 @@ while 1:
     wf.frames.writeframes(b''.join(frames))
     wf.close()
 
-    serialPort.write(wf.wave.open("r"))
-
-# stream.stop_stream()
-# stream.close()
-# p.terminate()
-#
-
-# wf.close()
+    serialPort.write(wf.wave.open("r"))  # arduino does not recognize this data type
